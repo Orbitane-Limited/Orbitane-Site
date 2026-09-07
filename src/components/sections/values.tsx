@@ -11,6 +11,7 @@ export function Values() {
     <section
       id={values.id}
       data-camera="values"
+      data-park="180"
       aria-label="Values"
       className="relative flex min-h-[100dvh] flex-col justify-center px-5 py-28 md:px-8 md:py-40"
     >

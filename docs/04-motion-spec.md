@@ -20,7 +20,7 @@ From the three references: family's weightlessness, igloo's single camera, super
 | Stagger | 0.08–0.12s | Slow enough to read as sequence |
 | Distances | 24–40px rises; camera moves in system units, never pixels | Enough travel to read as drift, never a 100px slide |
 | Interruptibility | All hover tweens `overwrite: "auto"`; scrubbed timelines are interruptible by nature | Continuity: nothing plays to completion against the visitor |
-| Perpetual motion budget | **Exactly one:** bodies drift along their orbits at rest (one revolution in 120s for Orbit 01, slower further out). Pauses when the tab is hidden or the system is offscreen. Off under reduced motion. | It says "in motion" without a word |
+| Perpetual motion budget | **Exactly one:** bodies drift along their orbits at rest (one revolution in 120s for Orbit 01, slower further out). Pauses when the tab is hidden or the system is offscreen. Off under reduced motion. Sections whose copy spans the orbits (`data-park`: How we work 90°, Values 180°, Contact 0°) pause the drift and park the bodies at an angle clear of the text; the flyby parks its body the same way. | It says "in motion" without a word, and never behind a word |
 
 Zero: bounce or elastic on layout, parallax for its own sake, cursor effects, starfields, scale-from-zero entrances, ease-in on UI, text scramble or glitch, autoplaying video, scroll-jacking outside the two pinned scenes.
 
@@ -29,21 +29,21 @@ Zero: bounce or elastic on layout, parallax for its own sake, cursor effects, st
 
 ## 2. The camera model (the mental map)
 
-The orbital system is one SVG, fixed behind the content, with a camera state `{ x, y, zoom }` applied as a single group transform. Sections do not animate the system directly; they define **camera keyframes**, and one master timeline scrubbed across the whole page interpolates between them. That is what makes the journey feel like one continuous flight instead of six separate effects.
+The orbital system is one SVG, fixed behind the content, with a camera state `{ x, y, zoom }` applied as a single group transform. Since 2026-09-07 the core is the Ring render itself (150 system units wide) over a soft coded light; "core scale" and "core opacity" below apply to both. Sections do not animate the system directly; they define **camera keyframes**, and one master timeline scrubbed across the whole page interpolates between them. That is what makes the journey feel like one continuous flight instead of six separate effects.
 
 | Section | Camera centre (system units; origin = core, +y down) | Zoom | Lit body | Orbit stroke opacity (lit / unlit) | Core | Telemetry |
 |---|---|---|---|---|---|---|
 | Approach | `-360, 0` desktop (copy left, core to its right); `0, -330` mobile (core below the CTAs) | 1.0 | Hemta at rest glow (30%) | 0.55 / 0.10 | scale 1 | `ORBITANE · 1 BODY IN ORBIT · MORE IN MOTION` |
-| Flyby · Hemta | Tracks the body; camera centre sits 17% of the viewport width to its right (desktop) or 28% of the height below it (mobile), so the body appears at the left third (desktop) or upper third (mobile) | 2.2 desktop / 1.6 mobile | Hemta full (100%) | 0.8 / 0.06 | scale 0.55 at 60% (a small distant light) | `ORBIT 01 · HEMTA · NATIVE MACOS · SHIPPED` |
+| Flyby · Hemta | Tracks the body; camera centre sits 17% of the viewport width to its right (desktop) or 28% of the height below it (mobile), so the body appears at the left third (desktop) or upper third (mobile) | 2.2 desktop / 1.6 mobile | Hemta full (100%) | 0.8 / 0.06 | scale 0.5 at 35% (the ring recedes to a small distant object) | `ORBIT 01 · HEMTA · NATIVE MACOS · SHIPPED` |
 | In motion | `-200, 0` desktop (statement left, system right); `0, -200` mobile | 0.78 | none (Hemta 30%) | 0.4 / 0.30 | scale 1 | none; probes show `ORBIT 0N · IN MOTION · UNANNOUNCED` on hover or focus |
 | How we work | `0, -300` (core sits low, light rises from below) | 1.1 | none | 0.3 / 0.12 + return path drawn | scale 1 | none |
 | Values | `100, -120` (core low, left of the right-aligned statement) | 1.6 | none | 0.15 / 0.05 | scale 1.2 at 85% | none |
-| Contact | `270, -140` (core lower-left, never behind the centred closer) | 2.0 | none | 0 / 0 | scale 1.5 at 85% | `RETURN COMPLETE` |
+| Contact | `0, -20` (the Ring seated between the CTA and the footer; the section is 65dvh so the page ends as the keyframe completes and the composition cannot shift) | 2.0 | none | 0 / 0 | scale 0.55 desktop / 0.65 mobile at 90% | `RETURN COMPLETE` |
 | Page (static routes, reduced motion) | `0, -380` | 0.9 | none | 0.4 / 0.14 | scale 1 at 70% | per section, no motion |
 
 Rules: the zoom never exceeds 2.2 on desktop (1.6 on mobile). On screens under 768px every non-flyby keyframe is rendered at 0.8× zoom with its vertical offset ×1.5, so all orbits stay in view and the core stays clear of copy that flows taller. System units: 1200 units span the longer viewport axis at zoom 1 (`preserveAspectRatio` slice). Camera moves use `scrub: 1.2`; nothing snaps. `invalidateOnRefresh: true` so the keyframe positions recompute on resize.
 
-**Implementation note (2026-09-07):** instead of one master timeline, each section owns a scrubbed tween from the previous keyframe to its own, running while its top travels from the viewport bottom to the viewport top. Consecutive ranges never overlap, so the result is one continuous flight, and pinned scenes hold their keyframe for the length of the pin. Pins refresh first and the system layer refreshes last (`refreshPriority`), with a sort before every refresh, so camera positions always account for pin spacing (`05 §3`).
+**Implementation note (2026-09-07, revised the same evening):** the first build used one scrubbed tween per section. That produced exactly the "jump between sections" the founder saw: every tween carried its own 1.2s smoothing, so at a boundary the incoming tween started at the exact keyframe while the outgoing one had not caught up, and on tall screens a section shorter than the viewport made two tweens overlap and fight. The build now matches this document: **one master timeline for the whole journey**, scrubbed by one ScrollTrigger from the top of the page to the bottom, with one smoothing pass. Segment i runs while section i's top travels from the viewport bottom to the viewport top, clamped so segments never overlap; positions are re-read and the timeline rebuilt on every refresh; the body's return to rest after a flyby lives in the same timeline. Verified with a frame-by-frame trace of the camera transform during a continuous fast scroll at 1440×900 and 1920×1150: the largest single-frame step equals the 99th percentile (no outlier jumps).
 
 ## 3. Telemetry (rationed instrument language)
 
@@ -72,7 +72,7 @@ Reduced motion: everything renders in its final state; no load sequence; no drif
 ### 4.2 Flyby · Orbit 01 · Hemta (pinned, scrubbed). THE signature scene
 Purpose: the visitor *feels* the journey pass a product, and sees the product's core promise work.
 
-Structure: the section pins for 3 viewport-heights. The camera keyframe (zoom 2.2 toward the body) is on the master timeline; the panel and the working moment are on a local timeline scrubbed by the section's own ScrollTrigger (`scrub: 1`).
+Structure: the section pins for 3 viewport-heights. The camera keyframe (zoom 2.2 toward the body) is on the master timeline. The panel and the working moment are on a local timeline scrubbed by a trigger that is live from one viewport **before** the pin (`start: "top bottom"`) through the end of the pin, with an idle lead-in: its first render happens while nothing is animating, so a fast entry into the pin can never snap the body to mid-arrival. A separate trigger does the pinning and the body capture; the beats trigger is anchored to the pin trigger's computed range rather than the pinned element's own rectangle, which is unreliable once the element is fixed.
 
 Beats (local timeline 0 → 1):
 - 0.00–0.25 arrival: body scales `1 → 5.7` in system units (28px → 160px on screen through the camera), glow `30% → 100%`, other orbits dim to 0.06; telemetry flips to Orbit 01
@@ -104,6 +104,7 @@ Purpose: the return begins; process shown as waypoints on the way home.
 - Nothing else moves
 
 ### 4.6 Contact (scroll-driven) and footer
+- The whole system fades out as the footer's top rises from 60% to 25% of the viewport (scrubbed), so on tall footers the ring never shows through beside the footer's wordmark. On desktop the page ends before this range starts, so the seated ring stays fully lit.
 - Core rises into the lower viewport (camera `y +0.35`, zoom 2.0); light fills the lower third
 - Headline, line and email pill rise and fade in (stagger 0.12)
 - Orbit index shows all dots visited and a completed hairline

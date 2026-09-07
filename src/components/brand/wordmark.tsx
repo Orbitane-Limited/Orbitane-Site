@@ -1,16 +1,36 @@
 import { site } from "@/content/site";
 
 /**
- * Proposed wordmark (docs/03 §5): a 10px core dot inside a single orbit ring,
- * then "Orbitane" in Bricolage 600. Replaced by the founder's mark if one exists.
+ * The Ring (docs/03 §5): Orbitane's mark. One smooth torus seen at a tilt, drawn as an
+ * elliptical ring whose front edge is heavier than its back edge. It is the unknot: Hemta's
+ * icon is a knotted ring, so the parent mark is the plain ring the knots are tied from.
+ * Vector geometry traced from public/brand/ring-mark-flat.png; renders in currentColor.
  */
+export function RingMark({ className, title }: { className?: string; title?: string }) {
+  return (
+    <svg
+      viewBox="-112 -66 224 132"
+      className={className}
+      role={title ? "img" : undefined}
+      aria-hidden={title ? undefined : true}
+      aria-label={title}
+    >
+      <g transform="rotate(-21)">
+        <path
+          fill="currentColor"
+          fillRule="evenodd"
+          d="M -100 0 a 100 40 0 1 0 200 0 a 100 40 0 1 0 -200 0 Z M -87.5 -6.5 a 83.5 23.5 0 1 0 167 0 a 83.5 23.5 0 1 0 -167 0 Z"
+        />
+      </g>
+    </svg>
+  );
+}
+
+/** Mark + name, used in the nav and footer. */
 export function Wordmark({ className }: { className?: string }) {
   return (
     <span className={`flex items-center gap-2.5 ${className ?? ""}`}>
-      <svg aria-hidden viewBox="0 0 24 24" className="size-6">
-        <ellipse cx="12" cy="12" rx="10.5" ry="4.6" transform="rotate(-14 12 12)" fill="none" stroke="var(--starlight)" strokeOpacity="0.55" strokeWidth="1" />
-        <circle cx="12" cy="12" r="3" fill="var(--core-light)" />
-      </svg>
+      <RingMark className="h-[18px] w-auto text-starlight" />
       <span className="text-[17px] font-semibold tracking-[-0.02em] text-starlight">{site.name}</span>
     </span>
   );

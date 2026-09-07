@@ -56,8 +56,8 @@ function rawKeyframe(key: CameraKey, mobile: boolean): Keyframe {
         : { x: -360, y: 0, zoom: 1, focusWeight: 0, fx: 0, fy: 0, lit: 0.55, unlit: 0.1, core: 1, coreOpacity: 1 };
     case "flyby":
       return mobile
-        ? { x: 0, y: 0, zoom: ZOOM_CAP.mobile, focusWeight: 1, fx: 0, fy: 0.28, lit: 0.8, unlit: 0.06, core: 0.55, coreOpacity: 0.6 }
-        : { x: 0, y: 0, zoom: ZOOM_CAP.desktop, focusWeight: 1, fx: 0.17, fy: 0, lit: 0.8, unlit: 0.06, core: 0.55, coreOpacity: 0.6 };
+        ? { x: 0, y: 0, zoom: ZOOM_CAP.mobile, focusWeight: 1, fx: 0, fy: 0.28, lit: 0.8, unlit: 0.06, core: 0.5, coreOpacity: 0.35 }
+        : { x: 0, y: 0, zoom: ZOOM_CAP.desktop, focusWeight: 1, fx: 0.17, fy: 0, lit: 0.8, unlit: 0.06, core: 0.5, coreOpacity: 0.35 };
     case "in-motion":
       // Statement sits left; the system pulls back to the right of it.
       return mobile
@@ -68,8 +68,10 @@ function rawKeyframe(key: CameraKey, mobile: boolean): Keyframe {
     case "values":
       return { x: 100, y: -120, zoom: 1.6, focusWeight: 0, fx: 0, fy: 0, lit: 0.15, unlit: 0.05, core: 1.2, coreOpacity: 0.85 };
     case "contact":
-      // The light returns lower-left, never behind the centred closer (legibility while it scrolls in).
-      return { x: 270, y: -140, zoom: 2.0, focusWeight: 0, fx: 0, fy: 0, lit: 0, unlit: 0, core: 1.5, coreOpacity: 0.85 };
+      // Return complete: the Ring sits centred in the empty band under the CTA, never behind the copy.
+      return mobile
+        ? { x: 0, y: -20, zoom: 2.0, focusWeight: 0, fx: 0, fy: 0, lit: 0, unlit: 0, core: 0.65, coreOpacity: 0.9 }
+        : { x: 0, y: -20, zoom: 2.0, focusWeight: 0, fx: 0, fy: 0, lit: 0, unlit: 0, core: 0.55, coreOpacity: 0.9 };
     case "page":
       // Static pages and reduced motion: the system sits low and calm behind long copy.
       return { x: 0, y: -380, zoom: 0.9, focusWeight: 0, fx: 0, fy: 0, lit: 0.4, unlit: 0.14, core: 1, coreOpacity: 0.7 };

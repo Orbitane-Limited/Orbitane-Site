@@ -4,7 +4,12 @@ import { useRef } from "react";
 import { usePathname } from "next/navigation";
 import { gsap, useGSAP, ScrollTrigger, NO_PREF, REDUCED, EASE, PRIORITY } from "@/lib/gsap";
 import { system, shippedBodies, inMotionBodies, orbitCount, ORBIT } from "@/content/system";
-import { keyframe, bodyPosition, getBodyState, BODY_PX, type CameraKey, type CameraState } from "@/lib/camera";
+import { keyframe, bodyPosition, getBodyState, nearestAngle, BODY_PX, BODY_PEAK, BODY_REST, type CameraKey, type CameraState } from "@/lib/camera";
+import ringCore from "../../../public/brand/ring-core.webp";
+
+/** The core is the Ring itself (docs/03 §5): the glossy render, cut out with its glow, in system units. */
+const CORE_W = 150;
+const CORE_H = (CORE_W * ringCore.height) / ringCore.width;
 
 /** System units visible across the longer viewport axis at zoom 1 (docs/05 §4). */
 const VIEW = 1200;
@@ -62,6 +67,10 @@ export function OrbitalSystem() {
             notchEl: el.querySelector<SVGElement>("[data-notch]"),
           }));
           let notchBase = 0;
+          if (process.env.NODE_ENV === "development") {
+            // Dev-only handle for inspecting camera and body state from the browser.
+            (window as unknown as { __system?: unknown }).__system = { cam, bodies, log: [] as string[] };
+          }
           bodies.forEach((b) => Object.assign(b.state, { scale: 1, glow: 0.3, drift: !reduce }));
 
           // Viewport → system-unit scale (preserveAspectRatio slice: the 2000-unit box covers the viewport).
@@ -191,9 +200,60 @@ export function OrbitalSystem() {
               },
             });
           });
-          // The readout yields to the footer (it is fixed and would sit over the footer's text).
+          // Sections whose copy spans the orbits declare `data-park="<angle>"`: while one is in view the
+          // bodies stop drifting and glide to that angle, clear of the text (docs/04 §1). When several are
+          // in view at once, the lowest one on the page owns the angle, so scroll jitter at a boundary
+          // cannot hand the bodies back to the section being left.
+          if (!reduce) {
+            const activeParks = new Map<HTMLElement, number>();
+            let currentPark: number | null = null;
+            const applyPark = () => {
+              const owner = sections.filter((sec) => activeParks.has(sec)).at(-1);
+              const target = owner ? (activeParks.get(owner) as number) : null;
+              if (target === currentPark) return;
+              currentPark = target;
+              bodies.forEach((b) => {
+                if (target === null) {
+                  gsap.killTweensOf(b.state, "angle");
+                  b.state.drift = true;
+                } else {
+                  b.state.drift = false;
+                  gsap.to(b.state, { angle: nearestAngle(b.state.angle, target), duration: 1.4, ease: EASE.drift, overwrite: "auto" });
+                }
+              });
+            };
+            sections
+              .filter((sec) => sec.dataset.park !== undefined)
+              .forEach((sec) => {
+                ScrollTrigger.create({
+                  trigger: sec,
+                  start: "top bottom",
+                  end: "bottom top",
+                  refreshPriority: PRIORITY.system,
+                  onToggle: (self) => {
+                    if (self.isActive) activeParks.set(sec, Number(sec.dataset.park));
+                    else activeParks.delete(sec);
+                    applyPark();
+                  },
+                });
+              });
+          }
+
+          // The readout yields to the footer (it is fixed and would sit over the footer's text), and the
+          // whole system fades as the footer rises past the lower third, so on long footers (mobile) the
+          // ring never shows through beside the footer's own wordmark.
           const footer = document.querySelector<HTMLElement>("footer");
           if (footer) {
+            gsap.fromTo(
+              svg,
+              { opacity: 1 },
+              {
+                opacity: 0,
+                ease: "none",
+                immediateRender: false,
+                scrollTrigger: { trigger: footer, start: "top 60%", end: "top 25%", scrub: true, refreshPriority: PRIORITY.system },
+              },
+            );
             ScrollTrigger.create({
               trigger: footer,
               start: "top 85%",
@@ -204,56 +264,79 @@ export function OrbitalSystem() {
             });
           }
 
-          // Camera keyframes between consecutive sections (docs/04 §2).
-          const cameraTweens: gsap.core.Tween[] = [];
-          if (!reduce) {
+          // Camera (docs/04 §2): ONE master timeline for the whole journey, scrubbed by one ScrollTrigger,
+          // so there is a single smoothing pass and no hand-off between per-section tweens (a hand-off
+          // snaps the camera whenever the outgoing tween has not caught up yet). Segment i runs while
+          // section i's top travels from the viewport bottom to the viewport top, clamped so segments
+          // never overlap when a section is shorter than the viewport. Positions are re-read on refresh.
+          const cameraTl = gsap.timeline({ paused: true, defaults: { ease: "none" } });
+          type Segment = { start: number; end: number; focus: string | null };
+          let segments: Segment[] = [];
+          const sectionTop = (sec: HTMLElement) => {
+            // A pinned section reports its fixed position; its pin-spacer holds the layout position.
+            const el = sec.parentElement?.classList.contains("pin-spacer") ? sec.parentElement : sec;
+            return el.getBoundingClientRect().top + window.scrollY;
+          };
+          const buildCamera = () => {
+            cameraTl.clear();
+            segments = [];
+            const vh = window.innerHeight;
+            const tops = sections.map(sectionTop);
+            let prevEnd = 0;
             sections.forEach((sec, i) => {
               if (i === 0) return;
               const prev = sections[i - 1];
               const from = keyframe(prev.dataset.camera as CameraKey, mobile);
               const to = keyframe(sec.dataset.camera as CameraKey, mobile);
-              const focusId = sec.dataset.focus ?? prev.dataset.focus ?? null;
-              cameraTweens.push(gsap.fromTo(cam, from, {
-                ...to,
-                ease: "none",
-                immediateRender: false,
-                scrollTrigger: {
-                  trigger: sec,
-                  start: "top bottom",
-                  end: "top top",
-                  scrub: 1.2,
-                  invalidateOnRefresh: true,
-                  refreshPriority: PRIORITY.system,
-                  onToggle: (self) => {
-                    if (self.isActive) cam.focus = focusId;
-                  },
-                },
-              }));
+              const end = Math.max(tops[i], prevEnd + 1);
+              const start = Math.min(Math.max(tops[i] - vh, prevEnd, 0), end - 1);
+              cameraTl.fromTo(cam, from, { ...to, duration: end - start, immediateRender: false }, start);
+              // Leaving a flyby: the focused body eases back to rest across the same segment.
+              if (prev.dataset.focus && !sec.dataset.focus) {
+                const st = getBodyState(prev.dataset.focus);
+                const peak = mobile ? BODY_PEAK.mobile : BODY_PEAK.desktop;
+                cameraTl.fromTo(
+                  st,
+                  { scale: peak.scale, glow: peak.glow },
+                  { scale: BODY_REST.scale, glow: BODY_REST.glow, duration: end - start, immediateRender: false },
+                  start,
+                );
+              }
+              segments.push({ start, end, focus: sec.dataset.focus ?? prev.dataset.focus ?? null });
+              prevEnd = end;
+            });
+            // 1 timeline second = 1 scroll pixel; a final no-op extends the timeline to the page's end.
+            const max = Math.max(prevEnd + 1, ScrollTrigger.maxScroll(window));
+            cameraTl.set({}, {}, max);
+          };
+          const focusAt = (y: number) => {
+            let focus: string | null = sections[0]?.dataset.focus ?? null;
+            for (const seg of segments) if (y >= seg.start) focus = seg.focus;
+            return focus;
+          };
+          if (!reduce) {
+            buildCamera();
+            ScrollTrigger.create({
+              start: 0,
+              end: "max",
+              scrub: 1.2,
+              animation: cameraTl,
+              refreshPriority: PRIORITY.system,
+              onRefresh: (self) => {
+                buildCamera();
+                if (process.env.NODE_ENV === "development") {
+                  (window as unknown as { __system?: { log: string[]; segments?: unknown } }).__system?.log.push(`refresh y=${Math.round(window.scrollY)} p=${self.progress.toFixed(3)}`);
+                  ((window as unknown as { __system?: { segments?: unknown } }).__system ?? {}).segments = segments;
+                }
+                // Re-sync instantly after a refresh (fonts, load, resize): no stale render, no lag.
+                cameraTl.progress(self.progress);
+                cam.focus = focusAt(self.progress * cameraTl.duration());
+              },
+              onUpdate: (self) => {
+                cam.focus = focusAt(self.progress * cameraTl.duration());
+              },
             });
           }
-
-          // After any refresh (fonts, load, resize, or positions first measured before the stylesheet
-          // applied), render exactly the camera segment the scroll position is in. The tweens share one
-          // camera object, so only the active or most recently passed segment may write to it.
-          const syncCamera = () => {
-            if (!cameraTweens.length) return;
-            const y = window.scrollY;
-            let current: gsap.core.Tween | null = null;
-            for (const tw of cameraTweens) {
-              const st = tw.scrollTrigger;
-              if (st && st.start <= y) current = tw;
-            }
-            if (current?.scrollTrigger) {
-              current.progress(current.scrollTrigger.progress);
-              const idx = cameraTweens.indexOf(current);
-              const focusSec = sections[idx + 1];
-              cam.focus = focusSec?.dataset.focus ?? sections[idx]?.dataset.focus ?? null;
-            } else {
-              cameraTweens[0].progress(0);
-              cam.focus = sections[0]?.dataset.focus ?? null;
-            }
-          };
-          ScrollTrigger.addEventListener("refresh", syncCamera);
 
           // Load sequence (docs/04 §4.1): the core comes into focus, orbits draw, bodies appear.
           if (!reduce) {
@@ -277,7 +360,6 @@ export function OrbitalSystem() {
           return () => {
             gsap.ticker.remove(render);
             ScrollTrigger.removeEventListener("refresh", size);
-            ScrollTrigger.removeEventListener("refresh", syncCamera);
             window.removeEventListener("orbit-focus", onOrbitFocus);
           };
         },
@@ -339,9 +421,16 @@ export function OrbitalSystem() {
 
             <g data-core-fx>
               <g data-core>
-                <circle r={150} fill="url(#core-light)" />
-                <circle r={22} fill="var(--core-light)" style={{ filter: "blur(10px)" }} opacity={0.75} />
-                <circle r={17} fill="var(--core-light)" />
+                {/* Ambient light around the ring; the ring render carries its own inner glow. */}
+                <circle r={150} fill="url(#core-light)" opacity={0.85} />
+                <image
+                  href={ringCore.src}
+                  x={-CORE_W / 2}
+                  y={-CORE_H / 2}
+                  width={CORE_W}
+                  height={CORE_H}
+                  style={{ filter: "saturate(0.85)" }}
+                />
               </g>
             </g>
 

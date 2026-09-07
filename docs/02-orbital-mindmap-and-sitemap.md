@@ -127,7 +127,7 @@ Layout-family diversity is a hard rule: no two sections share a layout family. E
 - Statement 2: **"We care about the people behind it."** Support line: "Every requirement has someone waiting on the other side of it."
 - Nothing else. The restraint is the design.
 
-### 4.6 Contact: return complete. Layout family: centred closer inside the core's light
+### 4.6 Contact: return complete. Layout family: centred closer above the Ring (section height 65dvh so the page ends as the camera settles and the ring stays seated between the CTA and the footer)
 - **System state:** the core fills the lower viewport as a soft light; the orbit index shows the journey complete.
 - Headline: **"Hand us a problem."**
 - One line: "Tell us what you need built. We reply personally."

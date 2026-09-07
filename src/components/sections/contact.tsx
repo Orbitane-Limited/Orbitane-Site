@@ -13,9 +13,10 @@ export function Contact() {
     <section
       id={contact.id}
       data-camera="contact"
+      data-park="0"
       data-telemetry={telemetry.returnComplete()}
       aria-labelledby="contact-heading"
-      className="relative flex min-h-[90dvh] flex-col items-center justify-center px-5 pt-28 pb-24 text-center md:px-8 md:pt-40"
+      className="relative flex min-h-[65dvh] flex-col items-center justify-center px-5 pt-28 pb-24 text-center md:px-8 md:pt-32"
     >
       <div className="max-w-4xl">
         <SplitHeading

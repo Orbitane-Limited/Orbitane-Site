@@ -1,9 +1,9 @@
 "use client";
 
 import { useRef } from "react";
-import { gsap, useGSAP, REDUCED, EASE, PRIORITY } from "@/lib/gsap";
+import { gsap, useGSAP, ScrollTrigger, REDUCED, EASE, PRIORITY } from "@/lib/gsap";
 import { telemetry, type ShippedBody } from "@/content/system";
-import { getBodyState, nearestAngle, BODY_PEAK, BODY_REST, FLYBY_ANGLE } from "@/lib/camera";
+import { getBodyState, nearestAngle, BODY_PEAK, FLYBY_ANGLE } from "@/lib/camera";
 import { MacWindow } from "@/components/moment/mac-window";
 import { DownloadRow } from "@/components/moment/download-row";
 import { CtaButton } from "@/components/motion/cta-button";
@@ -65,34 +65,46 @@ export function Flyby({ body }: { body: ShippedBody }) {
           gsap.set(lines, { yPercent: 115 });
           gsap.set(copy, { y: 32, autoAlpha: 0 });
 
-          const tl = gsap.timeline({
+          // Two triggers: one pins (and captures the body); one drives the beats. The beats trigger is
+          // live one viewport BEFORE the pin, with an idle lead-in, so its first render happens while
+          // nothing is animating yet and a fast entry can never snap the body to mid-arrival.
+          const pinLength = () => Math.round(window.innerHeight * (mobile ? 1.2 : 2));
+          const pinST = ScrollTrigger.create({
+            trigger: section,
+            start: "top top",
+            end: () => `+=${pinLength()}`,
+            pin: true,
+            anticipatePin: 1,
+            invalidateOnRefresh: true,
+            refreshPriority: PRIORITY.pin,
+            onToggle: (self) => {
+              if (self.isActive) {
+                state.drift = false;
+                gsap.to(state, {
+                  angle: nearestAngle(state.angle, mobile ? FLYBY_ANGLE.mobile : FLYBY_ANGLE.desktop),
+                  duration: 1.1,
+                  ease: EASE.drift,
+                  overwrite: "auto",
+                });
+              } else {
+                gsap.killTweensOf(state, "angle");
+                state.drift = true;
+              }
+            },
+          });
+
+          const lead = 1 / (1 + (mobile ? 1.2 : 2)); // share of the scrub range spent approaching the pin
+          const tl = gsap.timeline({ defaults: { ease: "none" } });
+          const scene = gsap.timeline({
             defaults: { ease: "none" },
             scrollTrigger: {
-              trigger: section,
-              start: "top top",
-              // Pin for two viewport-heights (three in total with the section itself); 1.2 on mobile.
-              end: () => `+=${Math.round(window.innerHeight * (mobile ? 1.2 : 2))}`,
-              pin: true,
-              anticipatePin: 1,
+              // Anchored to the pin trigger's own computed range (a pinned element's rect is unreliable):
+              // one viewport before the pin starts, through the end of the pin.
+              start: () => pinST.start - window.innerHeight,
+              end: () => pinST.end,
               scrub: 1,
               invalidateOnRefresh: true,
-              refreshPriority: PRIORITY.pin,
-              // Capture: while pinned the body glides to its canonical angle and stops drifting,
-              // so the composition (body left, core below it, panel right) is deterministic.
-              onToggle: (self) => {
-                if (self.isActive) {
-                  state.drift = false;
-                  gsap.to(state, {
-                    angle: nearestAngle(state.angle, mobile ? FLYBY_ANGLE.mobile : FLYBY_ANGLE.desktop),
-                    duration: 1.1,
-                    ease: EASE.drift,
-                    overwrite: "auto",
-                  });
-                } else {
-                  gsap.killTweensOf(state, "angle");
-                  state.drift = true;
-                }
-              },
+              refreshPriority: PRIORITY.section,
             },
           });
 
@@ -128,25 +140,11 @@ export function Flyby({ body }: { body: ShippedBody }) {
           // 0.85–1.00 departure: the panel drifts out; the body eases back as the camera pulls away.
           tl.to(panel, { x: 48, autoAlpha: 0, duration: 0.15, ease: "power2.in" }, 0.85);
 
-          // The body returns to rest while the camera pulls back toward the next keyframe.
-          const all = Array.from(document.querySelectorAll<HTMLElement>("[data-camera]"));
-          const next = all[all.indexOf(section) + 1] ?? null;
-          if (next) {
-            gsap.to(state, {
-              scale: BODY_REST.scale,
-              glow: BODY_REST.glow,
-              ease: "none",
-              immediateRender: false,
-              scrollTrigger: {
-                trigger: next,
-                start: "top bottom",
-                end: "top top",
-                scrub: 1.2,
-                invalidateOnRefresh: true,
-                refreshPriority: PRIORITY.system,
-              },
-            });
-          }
+          // Mount the beats after the idle lead-in; the scene spans lead-in + pin exactly.
+          scene.set({}, {}, 0);
+          scene.add(tl, lead);
+          tl.duration(1 - lead);
+
         },
       );
     },

@@ -13,6 +13,7 @@ export function HowWeWork() {
     <section
       id={howWeWork.id}
       data-camera="how-we-work"
+      data-park="90"
       aria-labelledby="how-we-work-heading"
       className="relative px-5 py-28 md:px-8 md:py-40"
     >

@@ -56,7 +56,7 @@ lib/camera.ts          # Keyframes per section key (docs/04 §2), body geometry,
 How the camera works (as built):
 - The SVG has a fixed `viewBox` in **system units** (`-600 -600 1200 1200`, origin at the core) with `preserveAspectRatio="xMidYMid slice"`, so 1200 units span the longer viewport axis. Orbit radii (260 + 140 per orbit), the 1 : 0.42 ellipse ratio and the -14° tilt are expressed in these units; strokes use `vector-effect: non-scaling-stroke` so they stay 1.25px at any zoom.
 - `camera.ts` holds `{ x, y, zoom, focusWeight, fx, fy, lit, unlit, core, coreOpacity, focus }`. Every frame (`gsap.ticker`), `orbital-system.tsx` resolves the centre (blending toward the focused body's live position when `focusWeight > 0`) and writes one `transform` on the camera `<g>`, the core's scale/opacity, orbit stroke opacities and each body's transform. One render function, a handful of attribute writes.
-- Sections declare `data-camera="<key>"` (and `data-focus="<bodyId>"` for flybys, `data-telemetry` for readouts, `data-index` for the nav dots). The system reads them once per route and creates, for each section after the first, a scrubbed tween from the previous keyframe to its own (`start: "top bottom"`, `end: "top top"`, `scrub: 1.2`, `invalidateOnRefresh`). Ranges never overlap, so the flight is continuous and pins hold their keyframe.
+- Sections declare `data-camera="<key>"` (and `data-focus="<bodyId>"` for flybys, `data-telemetry` for readouts, `data-index` for the nav dots, `data-park="<angle>"` to hold drifting bodies clear of their copy). The system reads them once per route and builds **one master timeline** (1 timeline second = 1 scroll pixel): for each section after the first, a segment from the previous keyframe to its own, running while the section's top travels from the viewport bottom to the viewport top, clamped so segments never overlap. One ScrollTrigger scrubs it (`start: 0`, `end: "max"`, `scrub: 1.2`); on every refresh the timeline is rebuilt from fresh positions (pin-spacer aware) and re-synced instantly. Per-section tweens were tried first and rejected: separate smoothing passes snap at boundaries (see `04 §2`).
 - Body drift is a ticker increment (one revolution in 120s for Orbit 01, +60s per orbit out). A flyby sets `drift = false` while pinned and tweens the body to its canonical angle; the shared `BodyState` in `camera.ts` is how the flyby scene and the system layer talk without props.
 - Reduced motion: no camera tweens, no drift, no load sequence; the camera sits on the "page" keyframe (`04 §2`). Static routes (`/privacy`) declare `data-camera="page"`.
 
@@ -121,6 +121,8 @@ src/
 docs/                     # these documents + diagrams + research captures
 public/
   bodies/hemta.png        # real product icons (alpha), 320px, served through the SVG <image>
+  brand/                  # the Ring: source render, flat reference, cutout core, avatar, OG source (docs/03 §5)
+scripts/brand-assets.mjs  # sharp pipeline: source render → ring-core.webp, avatar, OG source, apple-icon
 ```
 
 Rules: sections are server components; anything animated is an isolated `"use client"` leaf. `flyby.tsx` is one generic component fed by the registry, never a per-product copy. One icon family. No copy in components.
@@ -193,4 +195,4 @@ WebGL/Three.js, video, blog or MDX pipeline, CMS, i18n, theme toggle (one locked
 - **Lighthouse** on the production build is recorded in §7.
 - **Verification harness lesson:** the Playwright MCP's default tab applies its own viewport and media emulation after navigation, so breakpoint- and reduced-motion-dependent checks must run on a page created with `context.newPage()`; the site handled the resulting mid-load breakpoint switches correctly, which is itself a useful resilience test.
 - **Deferred from the contract:** the mobile orbit-index progress hairline (index hidden under 768px), decorative hover on lit bodies, and the registry unit test for hue distance. All are additive.
-- **Founder inputs received 2026-09-07:** Hemta URL, contact email and legal name are wired in (`content/system.ts`, `content/site.ts`). Still open: the logo (generated after this pass), a location for the footer if wanted, the product-count statement, final copy lock.
+- **Founder inputs received 2026-09-07:** Hemta URL, contact email and legal name are wired in (`content/system.ts`, `content/site.ts`). The logo (the Ring) arrived the same day and is wired in everywhere: nav, footer, favicon, touch icon, OG image, and as the system's core (`docs/03 §5`). Still open: a location for the footer if wanted, the product-count statement, final copy lock.
