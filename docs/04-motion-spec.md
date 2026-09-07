@@ -1,6 +1,8 @@
 # Orbitane Site — Motion Spec
 
 > What moves, why it moves, and the exact values. GSAP + ScrollTrigger for all animation, Lenis for smooth scroll (see `05 §3`).
+> **Build deltas (2026-09-07), supersede conflicting values below:** body 40px at rest (not 28px), 168px at the flyby peak on desktop, 112px on mobile; a void notch breaks the orbit line around the body and stays the same size on screen while the body grows. The flyby **captures** the body: when the pin starts, drift pauses and the body glides to a canonical angle (270° desktop, 90° mobile) in 1.1s `expo.out`, so the composition is deterministic (body left, dimmed core beneath it, panel right); drift resumes when the pin ends. Pin length is two viewport heights on desktop (1.2 on mobile), three with the section itself. Panel arrival moved earlier (headline lines at 0.12, copy and window at 0.18; body growth 0–0.22). The core dims to 45% during a flyby. Orbit strokes are non-scaling (constant 1.25px at any zoom). Unlit-orbit hover and focus live on visible **probe pills** in the In-motion section (accessible buttons) that announce to the system layer, rather than on the SVG strokes. The telemetry readout yields to the footer and renders as one 9px line on mobile. Reduced motion places the whole page on the static "page" keyframe (§2). **The hero headline does not animate in**: it is present at first paint so it is the page's largest contentful paint (three animated variants were measured and each hid the headline from Chrome's LCP observer, `05 §15`); the subtext and CTAs drift up from CSS, and the core focusing behind the headline is the reveal. Drift period, below-fold reveals and micro-interactions shipped as specified.
+
 > Governing idea: **motion is the demonstration.** The site is Orbitane's first product demo; every animation must read as engineered craft, carry the visitor rather than perform at them, and communicate one of: where you are, what this is, or what just changed. If an animation cannot be justified in one sentence, it is cut.
 
 ## 1. Motion personality
@@ -29,16 +31,19 @@ Zero: bounce or elastic on layout, parallax for its own sake, cursor effects, st
 
 The orbital system is one SVG, fixed behind the content, with a camera state `{ x, y, zoom }` applied as a single group transform. Sections do not animate the system directly; they define **camera keyframes**, and one master timeline scrubbed across the whole page interpolates between them. That is what makes the journey feel like one continuous flight instead of six separate effects.
 
-| Section | Camera (system units; origin = core) | Zoom | Lit body | Orbit stroke opacity (lit / unlit) | Telemetry |
-|---|---|---|---|---|---|
-| Approach | `0, 0` | 1.0 | Hemta at rest glow (30%) | 0.55 / 0.14 | `ORBITANE · 1 BODY IN ORBIT · MORE IN MOTION` |
-| Flyby · Hemta | Hemta's position, offset so the body sits at the left third | 2.2 | Hemta full (100%) | 0.8 / 0.06 | `ORBIT 01 · HEMTA · NATIVE MACOS · SHIPPED` |
-| In motion | `0, 0` | 0.78 | none (Hemta 30%) | 0.4 / 0.30 | on hover: `ORBIT 0N · IN MOTION · UNANNOUNCED` |
-| How we work | `0, -0.15` (core slightly above centre) | 1.1 | none | 0.3 / 0.12 + return path drawn | none |
-| Values | `0, 0` | 1.6 | none; core light at 70% of viewport | 0.15 / 0.05 | none |
-| Contact | `0, +0.35` (core rises into the lower viewport) | 2.0 | none; core light fills the lower third | 0 / 0 | `RETURN COMPLETE` (orbit index only) |
+| Section | Camera centre (system units; origin = core, +y down) | Zoom | Lit body | Orbit stroke opacity (lit / unlit) | Core | Telemetry |
+|---|---|---|---|---|---|---|
+| Approach | `-360, 0` desktop (copy left, core to its right); `0, -330` mobile (core below the CTAs) | 1.0 | Hemta at rest glow (30%) | 0.55 / 0.10 | scale 1 | `ORBITANE · 1 BODY IN ORBIT · MORE IN MOTION` |
+| Flyby · Hemta | Tracks the body; camera centre sits 17% of the viewport width to its right (desktop) or 28% of the height below it (mobile), so the body appears at the left third (desktop) or upper third (mobile) | 2.2 desktop / 1.6 mobile | Hemta full (100%) | 0.8 / 0.06 | scale 0.55 at 60% (a small distant light) | `ORBIT 01 · HEMTA · NATIVE MACOS · SHIPPED` |
+| In motion | `-200, 0` desktop (statement left, system right); `0, -200` mobile | 0.78 | none (Hemta 30%) | 0.4 / 0.30 | scale 1 | none; probes show `ORBIT 0N · IN MOTION · UNANNOUNCED` on hover or focus |
+| How we work | `0, -300` (core sits low, light rises from below) | 1.1 | none | 0.3 / 0.12 + return path drawn | scale 1 | none |
+| Values | `100, -120` (core low, left of the right-aligned statement) | 1.6 | none | 0.15 / 0.05 | scale 1.2 at 85% | none |
+| Contact | `270, -140` (core lower-left, never behind the centred closer) | 2.0 | none | 0 / 0 | scale 1.5 at 85% | `RETURN COMPLETE` |
+| Page (static routes, reduced motion) | `0, -380` | 0.9 | none | 0.4 / 0.14 | scale 1 at 70% | per section, no motion |
 
-Rules: the zoom never exceeds 2.2 on desktop (1.6 on mobile). Camera moves use the master timeline's `scrub: 1.2`; nothing snaps. `invalidateOnRefresh: true` so the keyframe positions recompute on resize.
+Rules: the zoom never exceeds 2.2 on desktop (1.6 on mobile). On screens under 768px every non-flyby keyframe is rendered at 0.8× zoom with its vertical offset ×1.5, so all orbits stay in view and the core stays clear of copy that flows taller. System units: 1200 units span the longer viewport axis at zoom 1 (`preserveAspectRatio` slice). Camera moves use `scrub: 1.2`; nothing snaps. `invalidateOnRefresh: true` so the keyframe positions recompute on resize.
+
+**Implementation note (2026-09-07):** instead of one master timeline, each section owns a scrubbed tween from the previous keyframe to its own, running while its top travels from the viewport bottom to the viewport top. Consecutive ranges never overlap, so the result is one continuous flight, and pinned scenes hold their keyframe for the length of the pin. Pins refresh first and the system layer refreshes last (`refreshPriority`), with a sort before every refresh, so camera positions always account for pin spacing (`05 §3`).
 
 ## 3. Telemetry (rationed instrument language)
 

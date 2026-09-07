@@ -1,18 +1,18 @@
 # Orbitane Site — Planning Docs
 
 > The design and build contract for orbitane.com. Read in order. Anything built that contradicts these documents needs a doc change first, not a silent exception.
-> Status: **Discovery + Contract complete, awaiting founder approval before build** (2026-09-06).
+> Status: **Contract approved 2026-09-07; V1 built and browser-verified the same day.** Build deltas are recorded at the top of docs 02–04 and in `05 §15`; founder inputs still owed are listed in `02 §7`.
 
 These documents are written to be shown to Orbitane's clients as proof of process. Vocabulary is explained where it first appears, decisions carry their reasoning, and every claim about a reference site was verified live.
 
 | Doc | What it locks down | Status |
 |---|---|---|
 | [00-brief.md](00-brief.md) | The founding brief: who Orbitane is, the approved Orbital System concept, references, values, working agreements | approved |
-| [01-research.md](01-research.md) | Live research pass over family.co, igloo.inc, superlist.com; the AI/ML product-house landscape; the orbit-concept prior art; where Orbitane positions | proposed |
-| [02-orbital-mindmap-and-sitemap.md](02-orbital-mindmap-and-sitemap.md) | The system vocabulary, the orbital mindmap, page tree, the scroll journey section by section with working copy, the scaling rule for new products | proposed |
-| [03-design-system.md](03-design-system.md) | Direction, palette, typography, shape, imagery, voice; becomes `@theme` tokens in `globals.css` | proposed |
-| [04-motion-spec.md](04-motion-spec.md) | Motion personality, the camera model, every scene beat by beat, smooth-scroll parameters, reduced-motion and mobile behaviour, enforcement checklist | proposed |
-| [05-architecture.md](05-architecture.md) | Stack, folder layout, the product registry that makes the site scale, GSAP + Lenis strategy, performance and accessibility gates, workflow | proposed |
+| [01-research.md](01-research.md) | Live research pass over family.co, igloo.inc, superlist.com; the AI/ML product-house landscape; the orbit-concept prior art; where Orbitane positions | done |
+| [02-orbital-mindmap-and-sitemap.md](02-orbital-mindmap-and-sitemap.md) | The system vocabulary, the orbital mindmap, page tree, the scroll journey section by section with working copy, the scaling rule for new products | built |
+| [03-design-system.md](03-design-system.md) | Direction, palette, typography, shape, imagery, voice; becomes `@theme` tokens in `globals.css` | built |
+| [04-motion-spec.md](04-motion-spec.md) | Motion personality, the camera model, every scene beat by beat, smooth-scroll parameters, reduced-motion and mobile behaviour, enforcement checklist | built |
+| [05-architecture.md](05-architecture.md) | Stack, folder layout, the product registry that makes the site scale, GSAP + Lenis strategy, performance and accessibility gates, workflow, build notes | built |
 
 Supporting material: `diagrams/orbital-system.svg` (+ `.png`) is the system map used across the docs; `research/captures/` holds the reference screenshots taken during the research pass.
 

@@ -1,0 +1,172 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "lenis/dist/lenis.css";
+
+/*
+  Orbitane design tokens (docs/03-design-system.md).
+  One theme, locked site-wide: a warm dark room. Orbitane is achromatic light;
+  colour belongs to product bodies. Components use these tokens only.
+*/
+
+@theme inline {
+  /* shadcn semantic mapping */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Orbitane neutrals (docs/03 §2.1) */
+  --color-void: var(--void);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-hairline: var(--hairline);
+  --color-starlight: var(--starlight);
+  --color-starlight-2: var(--starlight-2);
+  --color-starlight-3: var(--starlight-3);
+
+  /* Light (docs/03 §2.2) */
+  --color-core-light: var(--core-light);
+
+  /* Body hues (docs/03 §2.3) and product states (§2.4) */
+  --color-body-hemta: #2144df;
+  --color-body-hemta-light: #7a8fff;
+  --color-state-recovering: #c97a0a;
+  --color-state-completed: #1d9a4e;
+
+  /* Type */
+  --font-sans: var(--font-bricolage);
+  --font-mono: var(--font-martian);
+  --font-heading: var(--font-bricolage);
+
+  /* Shape (docs/03 §4): pills, 20px panels, 28/20 bezels. */
+  --radius-panel: 20px;
+  --radius-bezel: 28px;
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: 20px;
+  --radius-3xl: 28px;
+
+  /* Motion (docs/04 §1) */
+  --ease-drift: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-settle: cubic-bezier(0.34, 1.3, 0.64, 1);
+}
+
+:root {
+  color-scheme: dark;
+
+  --void: #0f0e0c;
+  --surface: #171512;
+  --surface-2: #1f1c18;
+  --hairline: rgb(244 241 236 / 0.1);
+  --starlight: #f4f1ec;
+  --starlight-2: #a8a39b;
+  --starlight-3: #86827c;
+  --core-light: #fbf8f2;
+
+  /* shadcn semantics resolved onto Orbitane tokens */
+  --background: var(--void);
+  --foreground: var(--starlight);
+  --card: var(--surface);
+  --card-foreground: var(--starlight);
+  --popover: var(--surface);
+  --popover-foreground: var(--starlight);
+  --primary: var(--starlight);
+  --primary-foreground: var(--void);
+  --secondary: var(--surface-2);
+  --secondary-foreground: var(--starlight);
+  --muted: var(--surface-2);
+  --muted-foreground: var(--starlight-2);
+  --accent: var(--surface-2);
+  --accent-foreground: var(--starlight);
+  --destructive: #d53535;
+  --border: var(--hairline);
+  --input: var(--hairline);
+  --ring: var(--starlight);
+  --radius: 0.625rem;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    @apply font-sans;
+    background: var(--void);
+  }
+  body {
+    @apply bg-background text-foreground;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  ::selection {
+    background: rgb(242 236 226 / 0.18);
+  }
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+  .font-mono {
+    font-variant-numeric: tabular-nums;
+  }
+  :focus-visible {
+    outline: 2px solid var(--starlight);
+    outline-offset: 3px;
+  }
+}
+
+/* Display type waits for SplitText before first paint (docs/05 §7: no CLS from splitting).
+   Under reduced motion it is simply visible. */
+.split-ready {
+  visibility: hidden;
+}
+@media (prefers-reduced-motion: reduce) {
+  .split-ready {
+    visibility: visible;
+  }
+}
+
+/* Hero reveal without JavaScript (docs/04 §4.1): the headline is present at first paint (it is the
+   LCP element; an opacity or clip animation on it would stop Chrome recording it). The reveal is the
+   core coming into focus behind it, while subtext and CTAs drift up from CSS alone. */
+.hero-drift {
+  opacity: 0;
+  transform: translateY(24px);
+  animation: hero-drift 0.9s var(--ease-drift) both;
+  animation-delay: var(--delay, 0.7s);
+}
+@keyframes hero-drift {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-drift {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Telemetry: instrument language, rationed to the system layer (docs/03 §3). */
+.telemetry {
+  @apply font-mono text-[11px] font-medium uppercase tracking-[0.08em] md:text-xs;
+}

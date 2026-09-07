@@ -1,6 +1,10 @@
 # Orbitane Site — Design System
 
 > The visual contract. These values become `@theme` tokens in `src/app/globals.css` and are the only values components may use.
+>
+> **Founder review revision (2026-09-07, supersedes values below):** the first build read "gold on black with a cold blue on top" and the copy sat over the light. Fixes: the core light is now near-white (`core-light #FBF8F2`) with a steep falloff, never a beige wash; the neutrals lost their yellow (`starlight #F4F1EC`, `starlight-2 #A8A39B`, `starlight-3 #86827C`); grain reduced to 2.5%; and a composition rule was added to §4: **light is never placed behind copy**. Camera keyframes now keep the core beside or below the text on every section (`04 §2`). Bodies are 40px at rest and sit *in* their orbit: a void-coloured notch breaks the line around them.
+>
+> **Build deltas (2026-09-07), supersede conflicting values below:** Martian Mono ships as a static 500 weight (no width axis; the variable file was not worth its bytes). Telemetry is 9px with 0.06em tracking on mobile, one line, truncated. Bodies are 36px at rest. The proposed typographic wordmark shipped (core dot in one orbit ring + "Orbitane" in Bricolage 600) pending a founder mark. The footer carries a transparent-to-void gradient so the core's light fades under it instead of cutting off. The orbit index is hidden under 768px (the mobile progress hairline is deferred) and on routes other than `/`. Favicon is `icon.svg` (void squircle, core dot, one ring, one cobalt body).
 > Derived from `01-research.md`. Structure enforced by the consistency locks: one theme, one type pairing, one radius rule, one icon family.
 
 ## 1. Direction
@@ -27,15 +31,15 @@ Dials (taste-skill): `DESIGN_VARIANCE 8 / MOTION_INTENSITY 8 / VISUAL_DENSITY 2`
 | `surface` | `#171512` | Panels, the Hemta moment's window frame exterior, footer |
 | `surface-2` | `#1F1C18` | Raised elements inside panels |
 | `hairline` | `rgb(242 236 226 / 0.10)` | All borders and orbit strokes at rest |
-| `starlight` | `#F2ECE2` | Headlines, primary text, primary CTA fill, lit orbit strokes |
-| `starlight-2` | `#A69F93` | Body and secondary text (AA on `void` and `surface`) |
-| `starlight-3` | `#6F6960` | Captions, telemetry at rest, unlit body rims (large text only) |
+| `starlight` | `#F4F1EC` | Headlines, primary text, primary CTA fill, lit orbit strokes |
+| `starlight-2` | `#A8A39B` | Body and secondary text (AA on `void` and `surface`) |
+| `starlight-3` | `#86827C` | Captions, telemetry at rest, unlit body rims (≥ 4.5:1 on `void`, so usable at small sizes) |
 
 ### 2.2 Light (the core; used as glow, never as fill for UI)
 
 | Token | Value | Role |
 |---|---|---|
-| `core-light` | `#FFF3E0` | Centre of the core's radial gradient |
+| `core-light` | `#FBF8F2` | Centre of the core's radial gradient (near-white; the room is warm, the light is not gold) |
 | `core-glow` | `rgb(255 243 224 / 0.18)` → `0` | Radial falloff around the core; hero and contact sections |
 
 ### 2.3 Body hues (delegated accent: exactly one lit body per viewport)
@@ -60,7 +64,7 @@ Green and amber appear nowhere else on the page.
 
 ### 2.5 Locks and gates
 - **One lit body per viewport.** The camera lights one body at a time, so any given screen has at most one saturated colour plus ivory light. This is how the "one accent" discipline survives a multi-product future.
-- Contrast gates: every text/background pair passes WCAG AA (4.5:1 body, 3:1 large). `starlight` on `void` ≈ 17:1; `starlight-2` on `void` ≈ 8:1; `starlight-3` is large-text only. Verified at build with a contrast tool, not by eye.
+- Contrast gates: every text/background pair passes WCAG AA (4.5:1 body, 3:1 large). `starlight` on `void` ≈ 17:1; `starlight-2` on `void` ≈ 8:1; `starlight-3` on `void` ≈ 5:1 (raised from `#6F6960` on 2026-09-07 after Lighthouse flagged small telemetry text). Verified at build, not by eye.
 - Never: purple, indigo, gradients between two hues, pure `#000`, pure `#FFF`.
 
 ## 3. Typography
@@ -95,6 +99,7 @@ Owner alternate (flagged): Instrument Sans in place of Bricolage if the founder 
 - **Glow budget:** at most two glowing elements per viewport (the core and one body). Glows are radial gradients or a single blurred circle; never `box-shadow` colour halos on UI.
 - **Section rhythm:** `py-28 md:py-40`; pinned scenes size themselves in viewport heights (`04`); container `max-w-7xl mx-auto px-5 md:px-8`.
 - **Nav island:** 56px pill, `bg-surface/70 backdrop-blur-md border border-hairline`, 16px from the top edge, centred. The one translucent element on the page.
+- **Light is never behind copy.** The core and a lit body are composition elements, not backgrounds: every camera keyframe places them beside or below the text of its section, and the falloff is steep enough that no paragraph ever sits on a mid-grey wash (founder review, 2026-09-07).
 - **Hairlines everywhere borders are needed.** Orbits, panels, waypoint rails and the footer rule all use `hairline`. One stroke weight for UI (1px) and one for the system layer (1.25px at 1× zoom).
 
 ## 5. Iconography, marks and imagery
@@ -122,10 +127,10 @@ Blue-black or navy backgrounds; purple or indigo anything; gradients between two
   --color-surface: #171512;
   --color-surface-2: #1F1C18;
   --color-hairline: rgb(242 236 226 / 0.10);
-  --color-starlight: #F2ECE2;
-  --color-starlight-2: #A69F93;
-  --color-starlight-3: #6F6960;
-  --color-core-light: #FFF3E0;
+  --color-starlight: #F4F1EC;
+  --color-starlight-2: #A8A39B;
+  --color-starlight-3: #86827C;
+  --color-core-light: #FBF8F2;
   --color-body-hemta: #2144DF;
   --color-body-hemta-light: #7A8FFF;
   --color-state-recovering: #C97A0A;

@@ -3,6 +3,8 @@
 > Source of truth for the site's structure and per-section messaging.
 > Copy strings are working drafts; final copy is locked during build, section by section, inside the honesty walls in §6.
 > The concept (THE ORBITAL SYSTEM) is approved in `00-brief.md`. This document turns it into a navigable structure.
+>
+> **Build deltas (2026-09-07):** all seven sections and `/privacy` are built as specified. In motion gained one visible element: a telemetry **probe pill** per unlit orbit (`ORBIT 02 · IN MOTION · UNANNOUNCED`), which is the accessible hover/focus handle for the orbit in the system layer. The orbit index lights orbits 02 and 03 together while In motion is centred, and lights the return dot for How we work, Values and Contact. The flyby's "Visit Hemta" CTA and the contact email pill render only once their real URL and address exist (§7). Working copy shipped as drafted; final copy lock is a founder pass.
 
 ## 1. The system in one picture
 
@@ -64,9 +66,9 @@ mindmap
 
 | Route | Purpose | Status |
 |---|---|---|
-| `/` | The journey: Approach → Orbit 01 · Hemta → In motion → How we work → Values → Contact → Footer. One page, one trajectory. | Proposed |
-| `/#hemta`, `/#in-motion`, `/#how-we-work`, `/#contact` | Anchors used by the orbit index and the footer. Smooth-scrolled via Lenis. | Proposed |
-| `/privacy` | Plain-words privacy page (the site collects nothing without a deliberate decision, see `05 §12`). | Proposed, stub |
+| `/` | The journey: Approach → Orbit 01 · Hemta → In motion → How we work → Values → Contact → Footer. One page, one trajectory. | Built |
+| `/#hemta`, `/#in-motion`, `/#how-we-work`, `/#contact` | Anchors used by the orbit index and the footer. Smooth-scrolled via Lenis; direct hash loads re-land after pins settle. | Built |
+| `/privacy` | Plain-words privacy page (the site collects nothing without a deliberate decision, see `05 §12`). | Built |
 | External: Hemta's site | Bodies link out to their own product sites. Orbitane never duplicates a product's marketing. | Depends on Hemta URL |
 | Later: `/work` | Client case studies, only with written client permission. Never invented, never anonymised into "a Fortune 500 company". | Not in V1 |
 | Later: `/notes` | Distilled lessons from the founder's knowledge vault. | Not in V1 |
@@ -82,7 +84,7 @@ Layout-family diversity is a hard rule: no two sections share a layout family. E
 - Orbit index is real navigation: click a dot to travel to that orbit (Lenis `scrollTo`). Hover shows the body's name in telemetry type.
 - Mobile: index collapses to a horizontal progress hairline with dots; the "Contact" pill stays.
 
-### 4.1 Approach: the hero. Layout family: centred statement over the system
+### 4.1 Approach: the hero. Layout family: statement beside the system (left-aligned on desktop, centred and stacked on mobile; revised from "centred over the system" after founder review, because copy over the light was illegible)
 - **System state:** wide view, core centred, all orbits visible, Hemta softly lit, unlit orbits at their faintest.
 - Working headline: **"Products in motion."**
   - Alternates to test at build (pick one, never all): "Built in orbit." / "A product house that thinks in systems."
@@ -162,10 +164,10 @@ Honesty walls (site-wide, non-negotiable):
 
 ## 7. Content dependencies (needed from the founder before launch)
 
-- [ ] Orbitane wordmark and mark (if none exists, the core light doubles as the mark in V1; a wordmark in Bricolage Grotesque is proposed in `03 §5`)
-- [ ] Hemta's public URL for the flyby CTA
+- [ ] Orbitane wordmark and mark: the founder will generate a logo after the V1 pass; the typographic wordmark (`03 §5`) ships until then
+- [x] Hemta's public URL for the flyby CTA: `https://hemta-site.vercel.app/` (2026-09-07)
 - [ ] Whether to state a number of products in motion (default: no number)
-- [ ] Contact email address (and whether a form is wanted)
-- [ ] Company legal name and location for the footer
+- [x] Contact email address: `orbitane.ltd@gmail.com` (2026-09-07); no form in V1
+- [x] Company legal name: Orbitane Limited (2026-09-07); location not stated
 - [ ] Any client names or case studies with written permission (default: none in V1)
 - [ ] Confirmation of the services wording: "AI/ML products and native macOS software"
