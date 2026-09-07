@@ -1,0 +1,112 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" width="1600" height="1000" role="img" aria-labelledby="title desc">
+  <title id="title">Orbitane — The Orbital System</title>
+  <desc id="desc">Diagram of orbitane.com's structure: the Orbitane core at the centre, Hemta as the first lit body on Orbit 01, two unlit orbits for products in motion, and the visitor's scroll trajectory: Approach, Flyby, In motion, Return.</desc>
+  <defs>
+    <radialGradient id="coreLight" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFF3E0" stop-opacity="1"/>
+      <stop offset="18%" stop-color="#FFF3E0" stop-opacity="0.85"/>
+      <stop offset="45%" stop-color="#FFF3E0" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#FFF3E0" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="hemtaGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#2144DF" stop-opacity="0.9"/>
+      <stop offset="40%" stop-color="#2144DF" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#2144DF" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="knot" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#4A6BFF"/>
+      <stop offset="100%" stop-color="#1A37BE"/>
+    </linearGradient>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#F2ECE2" fill-opacity="0.7"/>
+    </marker>
+    <filter id="soft" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="6"/>
+    </filter>
+    <style>
+      .mono { font-family: "Martian Mono", "SF Mono", Menlo, Consolas, monospace; font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; fill: #F2ECE2; }
+      .mono.dim { fill: #A69F93; }
+      .mono.faint { fill: #6F6960; }
+      .display { font-family: "Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif; fill: #F2ECE2; }
+      .orbit { fill: none; stroke: #F2ECE2; stroke-width: 1.25; }
+      .orbit.lit { stroke-opacity: 0.55; }
+      .orbit.unlit { stroke-opacity: 0.14; stroke-dasharray: 6 10; }
+      .path { fill: none; stroke: #F2ECE2; stroke-opacity: 0.45; stroke-width: 1.5; stroke-dasharray: 3 7; }
+      .tick { stroke: #F2ECE2; stroke-opacity: 0.35; stroke-width: 1; }
+    </style>
+  </defs>
+
+  <!-- void -->
+  <rect width="1600" height="1000" fill="#0F0E0C"/>
+
+  <!-- title block -->
+  <text class="mono dim" x="80" y="72">Orbitane · The Orbital System · structure of orbitane.com</text>
+  <text class="display" x="80" y="126" font-size="40" font-weight="600" letter-spacing="-1.2">One core. One orbit per product. The scroll is the trajectory.</text>
+
+  <!-- system centre -->
+  <g transform="translate(800 560)">
+    <!-- orbits: tilted ellipses, ratio 1 : 0.42 -->
+    <ellipse class="orbit lit"   rx="260" ry="109" transform="rotate(-14)"/>
+    <ellipse class="orbit unlit" rx="400" ry="168" transform="rotate(-14)"/>
+    <ellipse class="orbit unlit" rx="540" ry="227" transform="rotate(-14)"/>
+
+    <!-- core light -->
+    <circle r="150" fill="url(#coreLight)"/>
+    <circle r="22" fill="#FFF3E0"/>
+    <circle r="22" fill="#FFF3E0" filter="url(#soft)" opacity="0.6"/>
+
+    <!-- Hemta body on Orbit 01 (position at angle ~ 200deg on the tilted ellipse) -->
+    <g transform="rotate(-14) translate(-244 -38) rotate(14)">
+      <circle r="60" fill="url(#hemtaGlow)"/>
+      <rect x="-22" y="-22" width="44" height="44" rx="12" fill="url(#knot)"/>
+      <!-- knot mark (simplified) -->
+      <path d="M-9,-6 C-9,-16 9,-16 9,-6 C9,2 -9,2 -9,10 C-9,18 9,18 9,10" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round"/>
+    </g>
+
+    <!-- unlit bodies -->
+    <g transform="rotate(-14) translate(330 -95) rotate(14)">
+      <circle r="12" fill="#0F0E0C" stroke="#F2ECE2" stroke-opacity="0.35"/>
+    </g>
+    <g transform="rotate(-14) translate(-470 120) rotate(14)">
+      <circle r="12" fill="#0F0E0C" stroke="#F2ECE2" stroke-opacity="0.25"/>
+    </g>
+  </g>
+
+  <!-- labels: core -->
+  <line class="tick" x1="822" y1="560" x2="900" y2="512"/>
+  <text class="mono" x="908" y="508">Core · Orbitane</text>
+  <text class="mono dim" x="908" y="530">the light source · values · contact</text>
+
+  <!-- labels: Hemta -->
+  <line class="tick" x1="560" y1="470" x2="470" y2="410"/>
+  <text class="mono" x="270" y="404">Orbit 01 · Hemta · lit</text>
+  <text class="mono dim" x="270" y="426">native mac download manager · shipped</text>
+
+  <!-- labels: unlit -->
+  <line class="tick" x1="1120" y1="480" x2="1180" y2="430"/>
+  <text class="mono faint" x="1188" y="424">Orbit 02 · in motion · unlit</text>
+  <line class="tick" x1="340" y1="700" x2="290" y2="760"/>
+  <text class="mono faint" x="120" y="784">Orbit 03 · in motion · unlit</text>
+
+  <!-- trajectory: approach → flyby → in motion → return -->
+  <path class="path" d="M 200 940 C 420 900, 520 740, 640 610" marker-end="url(#arrow)"/>
+  <text class="mono dim" x="150" y="972">01 · Approach · the core comes into focus</text>
+
+  <path class="path" d="M 560 500 C 500 420, 560 360, 700 380" marker-end="url(#arrow)"/>
+  <text class="mono dim" x="470" y="342">02 · Flyby · Orbit 01, the Hemta moment</text>
+
+  <path class="path" d="M 1060 470 C 1220 470, 1330 560, 1340 660" marker-end="url(#arrow)"/>
+  <text class="mono dim" x="1130" y="700">03 · In motion · faint orbits, more to come</text>
+
+  <path class="path" d="M 1300 760 C 1180 840, 1000 800, 860 650" marker-end="url(#arrow)"/>
+  <text class="mono dim" x="1040" y="880">04 · Return · how we work, values, contact</text>
+
+  <!-- legend -->
+  <g transform="translate(80 900)">
+    <circle cx="8" cy="-4" r="6" fill="#FFF3E0"/><text class="mono dim" x="24" y="0">light = Orbitane (achromatic)</text>
+    <rect x="300" y="-11" width="14" height="14" rx="4" fill="url(#knot)"/><text class="mono dim" x="324" y="0">colour = a product body</text>
+    <line x1="560" y1="-4" x2="600" y2="-4" class="orbit unlit"/><text class="mono dim" x="612" y="0">dashed = in motion, unannounced</text>
+  </g>
+
+  <text class="mono faint" x="1520" y="972" text-anchor="end">docs/diagrams/orbital-system.svg</text>
+</svg>
